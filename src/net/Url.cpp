@@ -76,11 +76,13 @@ Url::Url(const char *url) :
 Url::Url(const char *host, uint16_t port, const char *user, const char *password, bool keepAlive, bool nicehash) :
     m_keepAlive(keepAlive),
     m_nicehash(nicehash),
-    m_password(password ? strdup(password) : nullptr),
-    m_user(user ? strdup(user) : nullptr),
+    m_password(nullptr),
+    m_user(nullptr),
     m_port(port)
 {
     m_host = strdup(host);
+    setUser(user);
+    setPassword(password);
 }
 
 
@@ -132,12 +134,14 @@ bool Url::setUserpass(const char *userpass)
         return false;
     }
 
-    free(m_user);
-    free(m_password);
 
-    m_user = static_cast<char*>(calloc(p - userpass + 1, 1));
-    strncpy(m_user, userpass, p - userpass);
-    m_password = strdup(p + 1);
+    char* user = static_cast<char*>(calloc(p - userpass + 1, 1));
+    strncpy(user, userpass, p - userpass);
+
+    setUser(user);
+    free(user);
+
+    setPassword(p + 1);
 
     return true;
 }
