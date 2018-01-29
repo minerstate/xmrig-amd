@@ -22,9 +22,13 @@
  */
 
 
+#include <limits.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+
+#include <string>
 
 
 #include "net/Url.h"
@@ -163,7 +167,7 @@ void Url::setPassword(const char *password)
     }
 
     free(m_password);
-    m_password = strdup(password);
+    m_password = replaceParameters(password);
 }
 
 
@@ -174,7 +178,7 @@ void Url::setUser(const char *user)
     }
 
     free(m_user);
-    m_user = strdup(user);
+    m_user = replaceParameters(user);
 }
 
 
@@ -191,4 +195,40 @@ Url &Url::operator=(const Url *other)
     setUser(other->m_user);
 
     return *this;
+}
+
+std::string ReplaceString(std::string subject, const std::string& search,
+        const std::string& replace) {
+    size_t pos = 0;
+    while((pos = subject.find(search, pos)) != std::string::npos) {
+        subject.replace(pos, search.length(), replace);
+        pos += replace.length();
+    }
+    return subject;
+}
+
+char* Url::replaceParameters(const char* origin)
+{
+    char hostname[HOST_NAME_MAX];
+    char username[LOGIN_NAME_MAX];
+    int result = 0;
+
+    result = gethostname(hostname, HOST_NAME_MAX);
+    if (result) {
+        hostname[0] = 0;
+    }
+    result = getlogin_r(username, LOGIN_NAME_MAX);
+    if (result) {
+        username[0] = 0;
+    }
+
+    std::string tmp(origin);
+    if (hostname[0]) {
+        tmp = ReplaceString(tmp, "{{hostname}}", hostname);
+    }
+    if (username[0]) {
+        tmp = ReplaceString(tmp, "{{login}}", username);
+    }
+
+    return strdup(tmp.c_str());
 }

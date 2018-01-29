@@ -35,6 +35,7 @@
 #include "api/ApiState.h"
 #include "Cpu.h"
 #include "net/Job.h"
+#include "net/Url.h"
 #include "Options.h"
 #include "Platform.h"
 #include "rapidjson/document.h"
@@ -99,6 +100,7 @@ char *ApiState::get(const char *url, int *status) const
     getHashrate(doc);
     getResults(doc);
     getConnection(doc);
+    getPools(doc);
 
     return finalize(doc);
 }
@@ -260,4 +262,25 @@ void ApiState::getResults(rapidjson::Document &doc) const
     results.AddMember("error_log", rapidjson::Value(rapidjson::kArrayType), allocator);
 
     doc.AddMember("results", results, allocator);
+}
+
+void ApiState::getPools(rapidjson::Document &doc) const
+{
+    auto &allocator = doc.GetAllocator();
+
+    rapidjson::Value pools(rapidjson::kArrayType);
+    for (const Url *url : Options::i()->pools()) {
+        rapidjson::Value pool(rapidjson::kObjectType);
+
+        pool.AddMember("host", rapidjson::StringRef(url->host()), allocator);
+        pool.AddMember("port", url->port(), allocator);
+        pool.AddMember("user", rapidjson::StringRef(url->user()), allocator);
+        pool.AddMember("pass", rapidjson::StringRef(url->password()), allocator);
+        pool.AddMember("keepalive", url->isKeepAlive(), allocator);
+        pool.AddMember("nicehash", url->isNicehash(), allocator);
+
+        pools.PushBack(pool, allocator);
+    }
+
+    doc.AddMember("pools", pools, allocator);
 }

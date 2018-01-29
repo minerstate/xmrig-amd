@@ -58,6 +58,9 @@ public:
 
     Url &operator=(const Url *other);
 
+protected:
+    char* replaceParameters(const char* origin);
+
 private:
     bool m_keepAlive;
     bool m_nicehash;

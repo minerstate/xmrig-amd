@@ -54,6 +54,7 @@ private:
     void getIdentify(rapidjson::Document &doc) const;
     void getMiner(rapidjson::Document &doc) const;
     void getResults(rapidjson::Document &doc) const;
+    void getPools(rapidjson::Document &doc) const;
 
     char m_id[17];
     char m_workerId[128];
