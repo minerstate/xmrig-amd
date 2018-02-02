@@ -41,6 +41,7 @@ public:
     static void release();
 
     static char *get(const char *url, int *status);
+    static char *switchPool(const char* url, int *status, int next);
     static void tick(const Hashrate *hashrate);
     static void tick(const NetworkState &results);
 

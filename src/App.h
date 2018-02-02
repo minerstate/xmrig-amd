@@ -35,34 +35,41 @@ class Console;
 class Httpd;
 class Network;
 class Options;
+class Process;
 
 
 class App : public IConsoleListener
 {
 public:
-  App(int argc, char **argv);
-  ~App();
-
-  int exec();
-
+    App(int argc, char **argv);
+    ~App();
+  
+    int exec();
+  
+    static inline App* i()         { return m_self; }
+    inline Network* network()      { return m_network; }
+    inline Process* process()      { return m_process; }
+  
 protected:
-  void onConsoleCommand(char command) override;
+    void onConsoleCommand(char command) override;
 
 private:
-  void background();
-  void close();
+    void background();
+    void close();
+  
+    static void onSignal(uv_signal_t *handle, int signum);
+  
+    static App *m_self;
 
-  static void onSignal(uv_signal_t *handle, int signum);
-
-  static App *m_self;
-
-  Console *m_console;
-  Httpd *m_httpd;
-  Network *m_network;
-  Options *m_options;
-  uv_signal_t m_sigHUP;
-  uv_signal_t m_sigINT;
-  uv_signal_t m_sigTERM;
+    Process *m_process;
+  
+    Console *m_console;
+    Httpd *m_httpd;
+    Network *m_network;
+    Options *m_options;
+    uv_signal_t m_sigHUP;
+    uv_signal_t m_sigINT;
+    uv_signal_t m_sigTERM;
 };
 
 

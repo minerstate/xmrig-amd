@@ -21,7 +21,7 @@
  *   along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
+#include <assert.h>
 #include <stdlib.h>
 #include <uv.h>
 
@@ -37,6 +37,7 @@
 #include "net/Network.h"
 #include "Options.h"
 #include "Platform.h"
+#include "Process.h"
 #include "Summary.h"
 #include "version.h"
 #include "workers/Workers.h"
@@ -61,6 +62,8 @@ App::App(int argc, char **argv) :
     m_network(nullptr),
     m_options(nullptr)
 {
+    assert(nullptr == m_self);
+
     m_self = this;
 
     Cpu::init();
@@ -93,6 +96,8 @@ App::App(int argc, char **argv) :
     uv_signal_init(uv_default_loop(), &m_sigHUP);
     uv_signal_init(uv_default_loop(), &m_sigINT);
     uv_signal_init(uv_default_loop(), &m_sigTERM);
+
+    m_process = new Process("xmrig");
 }
 
 

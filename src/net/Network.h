@@ -48,6 +48,8 @@ public:
   void connect();
   void stop();
 
+  void switchPool(size_t next);
+
 protected:
   void onActive(Client *client) override;
   void onJob(Client *client, const Job &job) override;

@@ -93,6 +93,18 @@ void Network::stop()
 }
 
 
+void Network::switchPool(size_t next)
+{
+    if (m_donate && m_donate->isActive()) {
+        m_donate->switchPool(next);
+        return;
+    }
+    if (m_strategy->isActive()) {
+        m_strategy->switchPool(next);
+    }
+}
+
+
 void Network::onActive(Client *client)
 {
     if (client->id() == -1) {

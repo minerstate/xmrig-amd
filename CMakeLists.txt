@@ -41,6 +41,7 @@ set(HEADERS
     src/amd/GpuContext.h
     src/Options.h
     src/Platform.h
+    src/Process.h
     src/Summary.h
     src/version.h
     src/workers/OclWorker.h
@@ -86,6 +87,7 @@ set(SOURCES
     src/amd/OclGPU.cpp
     src/Options.cpp
     src/Platform.cpp
+    src/Process.cpp
     src/Summary.cpp
     src/workers/OclWorker.cpp
     src/workers/OclThread.cpp
@@ -129,7 +131,7 @@ else()
         src/Platform_unix.cpp
         )
 
-    set(EXTRA_LIBS pthread)
+    set(EXTRA_LIBS pthread uuid)
 endif()
 
 add_definitions(/DXMRIG_AMD_PROJECT)

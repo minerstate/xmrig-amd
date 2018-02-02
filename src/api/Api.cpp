@@ -21,11 +21,16 @@
  *   along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <string.h>
 
+#include <microhttpd.h>
 
+#include "App.h"
 #include "api/Api.h"
 #include "api/ApiState.h"
+#include "log/Log.h"
+#include "net/Network.h"
 
 
 ApiState *Api::m_state = nullptr;
@@ -61,6 +66,35 @@ char *Api::get(const char *url, int *status)
 }
 
 
+char *Api::switchPool(const char *url, int *status, int next)
+{
+    assert(nullptr != url && nullptr != status);
+    assert(next >= 0);
+
+    uv_mutex_lock(&m_mutex);
+    App* app = App::i();
+    if (nullptr == app) {
+        LOG_ERR("Failed to retrieve App object.");
+        *status = MHD_HTTP_BAD_REQUEST;
+        return nullptr;
+    }
+    Network* network = App::i()->network();
+    if (nullptr == network) {
+        LOG_ERR("Failed to retrieve Network object.");
+        *status = MHD_HTTP_BAD_REQUEST;
+        return nullptr;
+    }
+
+    network->switchPool((size_t) next);
+    uv_mutex_unlock(&m_mutex);
+
+    char resp[4096];
+    snprintf(resp, sizeof(resp), "{\n\t\"status\": \"OK\",\n\t\"next\": %d\n}\n", next);
+
+    return strdup(resp);
+}
+
+
 void Api::tick(const Hashrate *hashrate)
 {
     if (!m_state) {
@@ -83,3 +117,5 @@ void Api::tick(const NetworkState &network)
     m_state->tick(network);
     uv_mutex_unlock(&m_mutex);
 }
+
+

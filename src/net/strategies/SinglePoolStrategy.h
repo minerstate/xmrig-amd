@@ -47,6 +47,7 @@ public:
     void resume() override;
     void stop() override;
     void tick(uint64_t now) override;
+    void switchPool(size_t next) override {}
 
 protected:
     void onClose(Client *client, int failures) override;

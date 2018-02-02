@@ -23,6 +23,7 @@
 
 
 #include "interfaces/IStrategyListener.h"
+#include "log/Log.h"
 #include "net/Client.h"
 #include "net/strategies/FailoverStrategy.h"
 #include "Options.h"
@@ -81,6 +82,15 @@ void FailoverStrategy::tick(uint64_t now)
     }
 }
 
+void FailoverStrategy::switchPool(size_t next)
+{
+    if (next < m_pools.size() && next != m_active) {
+        m_pools[m_active]->disconnect();
+        LOG_INFO("switch pool %s:%u -> %s:%d", m_pools[m_active]->host(), m_pools[m_active]->port(), m_pools[next]->host(), m_pools[next]->port());
+        m_pools[next]->connect();
+    }
+}
+
 
 void FailoverStrategy::onClose(Client *client, int failures)
 {
@@ -113,11 +123,14 @@ void FailoverStrategy::onJobReceived(Client *client, const Job &job)
 
 void FailoverStrategy::onLoginSuccess(Client *client)
 {
+    /*
     int active = m_active;
 
     if (client->id() == 0 || !isActive()) {
         active = client->id();
     }
+    */
+    int active = client->id();
 
     for (size_t i = 1; i < m_pools.size(); ++i) {
         if (active != static_cast<int>(i)) {

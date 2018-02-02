@@ -23,6 +23,7 @@
 
 
 #include <microhttpd.h>
+#include <stdlib.h>
 #include <string.h>
 
 
@@ -106,9 +107,27 @@ int Httpd::handler(void *cls, struct MHD_Connection *connection, const char *url
         return done(connection, status, nullptr);
     }
 
-    char *buf = Api::get(url, &status);
-    if (buf == nullptr) {
-        return MHD_NO;
+    char* buf = nullptr;
+    if (0 == strcmp(url, "/")) {
+        buf = Api::get(url, &status);
+    } else if (0 == strcmp(url, "/status")) {
+        buf = Api::get(url, &status);
+    } else if (0 == strcmp(url, "/switch")) {
+        const char* next = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "next");
+        if (nullptr != next) {
+            buf = Api::switchPool(url, &status, atoi(next));
+        } else {
+            status = MHD_HTTP_BAD_REQUEST;
+        }
+
+    } else {
+        status = MHD_HTTP_NOT_FOUND;
+    }
+    
+    status = (nullptr == buf && status ==MHD_HTTP_OK) ? MHD_HTTP_NOT_FOUND : status;
+
+    if (status != MHD_HTTP_OK) {
+        return done(connection, status, nullptr);
     }
 
     MHD_Response *rsp = MHD_create_response_from_buffer(strlen(buf), (void*)buf, MHD_RESPMEM_MUST_FREE);
