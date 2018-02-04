@@ -57,6 +57,7 @@ App *App::m_self = nullptr;
 
 
 App::App(int argc, char **argv) :
+    m_process(nullptr),
     m_console(nullptr),
     m_httpd(nullptr),
     m_network(nullptr),
@@ -96,8 +97,6 @@ App::App(int argc, char **argv) :
     uv_signal_init(uv_default_loop(), &m_sigHUP);
     uv_signal_init(uv_default_loop(), &m_sigINT);
     uv_signal_init(uv_default_loop(), &m_sigTERM);
-
-    m_process = new Process("xmrig");
 }
 
 
@@ -110,6 +109,8 @@ App::~App()
 #   endif
 
     delete m_console;
+
+    delete m_process;
 }
 
 
@@ -124,6 +125,8 @@ int App::exec()
     uv_signal_start(&m_sigTERM, App::onSignal, SIGTERM);
 
     background();
+    
+    m_process = new Process("xmrig");
 
     if (!CryptoNight::init(m_options->algo(), m_options->algoVariant())) {
         LOG_ERR("\"%s\" hash self-test failed.", m_options->algoName());
